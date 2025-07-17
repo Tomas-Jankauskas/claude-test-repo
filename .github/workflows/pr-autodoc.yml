@@ -1,0 +1,60 @@
+name: Auto-generate PR Documentation
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+      - master
+
+jobs:
+  generate-documentation:
+    if: |
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.user.type != 'Bot' &&
+      !startsWith(github.event.pull_request.title, 'docs: Add documentation for PR')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create documentation request issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issueBody = `
+            @claude Please analyze the recently merged PR #${{ github.event.pull_request.number }} and generate comprehensive documentation for it.
+
+            **PR Details:**
+            - Title: ${{ github.event.pull_request.title }}
+            - Author: ${{ github.event.pull_request.user.login }}
+            - Merged: ${{ github.event.pull_request.merged_at }}
+            - Link: ${{ github.event.pull_request.html_url }}
+
+            **Task:** Create a new file in the \`docs/prs/\` directory named \`pr-${{ github.event.pull_request.number }}-[clean-title].md\`.
+
+            The documentation should include:
+            1. **PR Summary** - Overview and details
+            2. **Changes Overview** - Files modified and functionality
+            3. **Technical Details** - Implementation approach
+            4. **Testing** - Tests added or modified
+            5. **Impact Analysis** - Breaking changes, performance
+            6. **Future Considerations** - Follow-up work
+
+            Please review the PR diff and create comprehensive documentation, then submit as a new PR.
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Generate documentation for PR #${{ github.event.pull_request.number }}`,
+              body: issueBody,
+              labels: ['documentation', 'auto-generated']
+            });

@@ -1,0 +1,33 @@
+{
+  "name": "claude-code-action-test",
+  "version": "1.0.0",
+  "description": "Test repository for Claude Code Action automated documentation updates",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "jest",
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "lint": "eslint src/**/*.js",
+    "format": "prettier --write src/**/*.js"
+  },
+  "keywords": [
+    "claude",
+    "github-actions",
+    "documentation",
+    "automation",
+    "ai"
+  ],
+  "author": "Test Developer",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "nodemon": "^2.0.22",
+    "eslint": "^8.40.0",
+    "prettier": "^2.8.8"
+  }
+}
