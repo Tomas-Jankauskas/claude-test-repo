@@ -60,7 +60,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'claude-code-action.yml',
-              ref: '${{ github.ref_name }}',
+              ref: '${{ github.event.pull_request.base.ref }}',
               inputs: {
                 issue_number: '${{ steps.create-issue.outputs.result }}'
               }
