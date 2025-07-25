@@ -235,6 +235,64 @@ describe('Configuration Utility', () => {
       const serverConfig = testConfig.getServerConfig();
       expect(serverConfig.cors.credentials).toBe(false);
     });
+
+    test('should get JWT configuration object', () => {
+      process.env.JWT_SECRET = 'test-secret-key';
+      process.env.JWT_EXPIRES_IN = '48h';
+      process.env.JWT_ISSUER = 'my-app';
+      process.env.JWT_AUDIENCE = 'app-users';
+      testConfig = new Config();
+      
+      const jwtConfig = testConfig.getJWTConfig();
+      
+      expect(jwtConfig).toEqual({
+        secret: 'test-secret-key',
+        expiresIn: '48h',
+        issuer: 'my-app',
+        audience: 'app-users'
+      });
+    });
+
+    test('should get JWT configuration with defaults', () => {
+      const jwtConfig = testConfig.getJWTConfig();
+      
+      expect(jwtConfig).toEqual({
+        secret: null,
+        expiresIn: '24h',
+        issuer: 'app',
+        audience: 'users'
+      });
+    });
+
+    test('should get logging configuration object', () => {
+      process.env.LOG_FORMAT = 'plain';
+      process.env.LOG_FILE = '/var/log/app.log';
+      process.env.LOG_MAX_SIZE = '50m';
+      process.env.LOG_MAX_FILES = '10';
+      testConfig = new Config();
+      
+      const loggingConfig = testConfig.getLoggingConfig();
+      
+      expect(loggingConfig).toEqual({
+        level: 'info',
+        format: 'plain',
+        file: '/var/log/app.log',
+        maxSize: '50m',
+        maxFiles: '10'
+      });
+    });
+
+    test('should get logging configuration with defaults', () => {
+      const loggingConfig = testConfig.getLoggingConfig();
+      
+      expect(loggingConfig).toEqual({
+        level: 'info',
+        format: 'json',
+        file: null,
+        maxSize: '10m',
+        maxFiles: 5
+      });
+    });
   });
 
   describe('Singleton instance', () => {
@@ -269,6 +327,82 @@ describe('Configuration Utility', () => {
       expect(typeof testConfig.get('NODE_ENV')).toBe('string');
       expect(testConfig.get('CORS_ORIGIN')).toBe('https://api.example.com');
       expect(typeof testConfig.get('CORS_ORIGIN')).toBe('string');
+    });
+  });
+
+  describe('Configuration security and export', () => {
+    let testConfig;
+
+    beforeEach(() => {
+      process.env.JWT_SECRET = 'super-secret-key';
+      process.env.DATABASE_URL = 'postgresql://user:password@localhost:5432/db';
+      process.env.PASSWORD = 'admin-password';
+      testConfig = new Config();
+    });
+
+    test('should export safe JSON configuration excluding sensitive data', () => {
+      const jsonConfig = testConfig.toJSON();
+      const parsedConfig = JSON.parse(jsonConfig);
+      
+      expect(parsedConfig.JWT_SECRET).toBe('[REDACTED]');
+      expect(parsedConfig.DATABASE_URL).toBe('[REDACTED]');
+      expect(parsedConfig.PASSWORD).toBe('[REDACTED]');
+      
+      // Non-sensitive data should be preserved
+      expect(parsedConfig.NODE_ENV).toBe('development');
+      expect(parsedConfig.PORT).toBe(3000);
+      
+      // Should be valid JSON
+      expect(() => JSON.parse(jsonConfig)).not.toThrow();
+    });
+
+    test('should handle missing sensitive keys gracefully', () => {
+      const cleanConfig = new Config();
+      const jsonConfig = cleanConfig.toJSON();
+      
+      expect(() => JSON.parse(jsonConfig)).not.toThrow();
+      expect(jsonConfig).toContain('NODE_ENV');
+    });
+  });
+
+  describe('Configuration watching', () => {
+    let testConfig;
+
+    beforeEach(() => {
+      testConfig = new Config();
+    });
+
+    test('should validate watch callback parameter', () => {
+      expect(() => {
+        testConfig.watch('not-a-function');
+      }).toThrow('Callback must be a function');
+
+      expect(() => {
+        testConfig.watch(123);
+      }).toThrow('Callback must be a function');
+
+      expect(() => {
+        testConfig.watch(null);
+      }).toThrow('Callback must be a function');
+    });
+
+    test('should accept valid callback function', () => {
+      const mockCallback = jest.fn();
+      
+      expect(() => {
+        testConfig.watch(mockCallback);
+      }).not.toThrow();
+    });
+
+    test('should set up interval for configuration watching', () => {
+      const mockCallback = jest.fn();
+      const setIntervalSpy = jest.spyOn(global, 'setInterval');
+      
+      testConfig.watch(mockCallback);
+      
+      expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 5000);
+      
+      setIntervalSpy.mockRestore();
     });
   });
 }); 
