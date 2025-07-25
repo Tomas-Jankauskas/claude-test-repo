@@ -39,10 +39,53 @@ claude-test-repo/
 │   ├── workflows/        # GitHub Actions for Claude
 │   └── ISSUE_TEMPLATE/   # Issue templates
 ├── src/                  # Source code
+│   ├── middleware/       # Express middleware
+│   └── utils/           # Utility functions (config, logger)
 ├── tests/               # Test files
 ├── docs/
 │   └── prs/            # Auto-generated PR docs
 └── CLAUDE.md           # Claude configuration
+```
+
+## Configuration Management
+
+This project includes a robust configuration utility at `src/utils/config.js` with the following features:
+
+### Features
+
+- **Environment-based configuration** with validation and defaults
+- **Type conversion** for numeric values from environment variables
+- **Configuration validation** with specific rules for each setting
+- **Environment detection** methods (isDevelopment, isProduction, isTest)
+- **Specialized configuration getters** for database, server, JWT, and logging
+- **Security features** for safe export of configuration (excludes sensitive data)
+- **Configuration watching** for hot-reloading capabilities
+
+### Usage Examples
+
+```javascript
+import { config } from './src/utils/config.js';
+
+// Basic usage
+const port = config.get('PORT'); // 3000
+const isDev = config.isDevelopment(); // true/false
+
+// Get specialized configurations
+const dbConfig = config.getDatabaseConfig();
+const serverConfig = config.getServerConfig();
+const jwtConfig = config.getJWTConfig();
+const loggingConfig = config.getLoggingConfig();
+
+// Validate required configuration
+config.validateRequired(['DATABASE_URL', 'JWT_SECRET']);
+
+// Safe export (excludes sensitive data)
+const safeConfig = config.toJSON();
+
+// Watch for configuration changes
+config.watch((newConfig, oldConfig) => {
+  console.log('Configuration changed:', newConfig);
+});
 ```
 
 ## How It Works

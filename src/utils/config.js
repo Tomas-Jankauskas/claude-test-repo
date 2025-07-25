@@ -158,6 +158,69 @@ class Config {
       }
     };
   }
+
+  /**
+   * Get JWT authentication configuration
+   * @returns {Object} JWT configuration
+   */
+  getJWTConfig() {
+    return {
+      secret: this.get('JWT_SECRET'),
+      expiresIn: this.get('JWT_EXPIRES_IN', '24h'),
+      issuer: this.get('JWT_ISSUER', 'app'),
+      audience: this.get('JWT_AUDIENCE', 'users')
+    };
+  }
+
+  /**
+   * Get logging configuration
+   * @returns {Object} Logging configuration
+   */
+  getLoggingConfig() {
+    return {
+      level: this.get('LOG_LEVEL'),
+      format: this.get('LOG_FORMAT', 'json'),
+      file: this.get('LOG_FILE', null),
+      maxSize: this.get('LOG_MAX_SIZE', '10m'),
+      maxFiles: this.get('LOG_MAX_FILES', 5)
+    };
+  }
+
+  /**
+   * Export configuration to JSON string (excluding sensitive data)
+   * @returns {string} JSON representation of safe configuration
+   */
+  toJSON() {
+    const safeConfig = { ...this.config };
+    // Remove sensitive keys
+    const sensitiveKeys = ['JWT_SECRET', 'DATABASE_URL', 'PASSWORD'];
+    sensitiveKeys.forEach(key => {
+      if (safeConfig[key]) {
+        safeConfig[key] = '[REDACTED]';
+      }
+    });
+    return JSON.stringify(safeConfig, null, 2);
+  }
+
+  /**
+   * Watch for configuration changes (for hot-reloading)
+   * @param {Function} callback - Function to call when config changes
+   */
+  watch(callback) {
+    if (typeof callback !== 'function') {
+      throw new Error('Callback must be a function');
+    }
+    
+    // Simple implementation - could be enhanced with file system watching
+    const originalConfig = { ...this.config };
+    setInterval(() => {
+      this.loadConfig();
+      if (JSON.stringify(originalConfig) !== JSON.stringify(this.config)) {
+        callback(this.config, originalConfig);
+        Object.assign(originalConfig, this.config);
+      }
+    }, 5000);
+  }
 }
 
 // Export singleton instance
