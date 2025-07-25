@@ -2,34 +2,29 @@ name: Auto-generate PR Documentation
 
 on:
   pull_request:
-    types: [closed]
-    branches:
-      - main
-      - master
+    types: [opened]  # Temporarily changed from [closed] for testing
+
+permissions:
+  contents: write
+  issues: write
+  actions: write
 
 jobs:
-  generate-documentation:
-    if: |
-      github.event.pull_request.merged == true &&
-      github.event.pull_request.user.type != 'Bot' &&
-      !startsWith(github.event.pull_request.title, 'docs: Add documentation for PR')
+  create-documentation-request:
+    if: github.event.pull_request.state == 'open'  # Temporarily changed for testing
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      issues: write
-      id-token: write
-
+    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Create documentation request issue
+      - name: Create Documentation Request Issue
+        id: create-issue
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const issueBody = `
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Generate documentation for PR #${{ github.event.pull_request.number }}`,
+              body: `
             @claude Please analyze the recently merged PR #${{ github.event.pull_request.number }} and generate comprehensive documentation for it.
 
             **PR Details:**
@@ -49,12 +44,25 @@ jobs:
             6. **Future Considerations** - Follow-up work
 
             Please review the PR diff and create comprehensive documentation, then submit as a new PR.
-            `;
-
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `Generate documentation for PR #${{ github.event.pull_request.number }}`,
-              body: issueBody,
+            `,
               labels: ['documentation', 'auto-generated']
             });
+            
+            console.log(`Created issue #${issue.data.number}`);
+            return issue.data.number;
+
+      - name: Trigger Claude Code Action
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Trigger the Claude Code Action workflow manually
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'claude-code-action.yml',
+              ref: '${{ github.ref_name }}',
+              inputs: {
+                issue_number: '${{ steps.create-issue.outputs.result }}'
+              }
+            });
+            console.log('Triggered Claude Code Action workflow');
