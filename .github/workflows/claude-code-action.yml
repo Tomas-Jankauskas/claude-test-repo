@@ -7,12 +7,6 @@ on:
     types: [created]
   issues:
     types: [opened, assigned]
-  workflow_dispatch:
-    inputs:
-      issue_number:
-        description: 'Issue number to process'
-        required: true
-        type: number
 
 permissions:
   contents: write
@@ -22,12 +16,11 @@ permissions:
 
 jobs:
   claude-pr:
-    # Run if @claude is mentioned or workflow_dispatch is triggered
+    # Run if @claude is mentioned in issues or comments
     if: |
       (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'issues' && contains(github.event.issue.body, '@claude')) ||
-      (github.event_name == 'workflow_dispatch')
+      (github.event_name == 'issues' && contains(github.event.issue.body, '@claude'))
     runs-on: ubuntu-latest
     
     steps:
@@ -39,11 +32,11 @@ jobs:
         with:
           trigger_phrase: "@claude"
           timeout_minutes: "60"
-          max_turns: "10"
+          max_turns: "20"
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           model: "claude-3-7-sonnet-20250219"
-          # Use agent mode for workflow_dispatch (automation), tag mode for @claude mentions
-          mode: ${{ github.event_name == 'workflow_dispatch' && 'agent' || 'tag' }}
+          # Use tag mode for @claude mentions
+          mode: "tag"
         env:
           DEBUG: "true"
