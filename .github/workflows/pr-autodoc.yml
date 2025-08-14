@@ -25,25 +25,44 @@ jobs:
               repo: context.repo.repo,
               title: `Generate documentation for PR #${{ github.event.pull_request.number }}`,
               body: `
-            @claude Please analyze the recently merged PR #${{ github.event.pull_request.number }} and generate comprehensive documentation for it.
+            @claude **URGENT DOCUMENTATION TASK**: Create documentation for merged PR #${{ github.event.pull_request.number }}
 
-            **PR Details:**
+            **STEP-BY-STEP INSTRUCTIONS:**
+            1. **FIRST**: Get PR #${{ github.event.pull_request.number }} diff and analyze the changes
+            2. **SECOND**: Create file \`docs/prs/pr-${{ github.event.pull_request.number }}-[clean-title].md\` (clean title = lowercase, replace spaces/special chars with dashes)
+            3. **THIRD**: Write comprehensive documentation using the template below
+            4. **FOURTH**: Create a new PR with the documentation file
+
+            **PR TO DOCUMENT:**
             - Title: ${{ github.event.pull_request.title }}
             - Author: ${{ github.event.pull_request.user.login }}
             - Merged: ${{ github.event.pull_request.merged_at }}
-            - Link: ${{ github.event.pull_request.html_url }}
+            - URL: ${{ github.event.pull_request.html_url }}
 
-            **Task:** Create a new file in the \`docs/prs/\` directory named \`pr-${{ github.event.pull_request.number }}-[clean-title].md\`.
+            **DOCUMENTATION TEMPLATE TO USE:**
+            \`\`\`markdown
+            # PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}
 
-            The documentation should include:
-            1. **PR Summary** - Overview and details
-            2. **Changes Overview** - Files modified and functionality
-            3. **Technical Details** - Implementation approach
-            4. **Testing** - Tests added or modified
-            5. **Impact Analysis** - Breaking changes, performance
-            6. **Future Considerations** - Follow-up work
+            ## PR Summary
+            [Brief overview of what this PR accomplishes]
 
-            Please review the PR diff and create comprehensive documentation, then submit as a new PR.
+            ## Changes Overview
+            [List of files modified and key functionality added/changed]
+
+            ## Technical Details
+            [Implementation approach, architecture decisions, key code changes]
+
+            ## Testing
+            [Tests added, modified, or testing approach used]
+
+            ## Impact Analysis
+            [Breaking changes, performance implications, compatibility notes]
+
+            ## Future Considerations
+            [Follow-up work, potential improvements, known limitations]
+            \`\`\`
+
+            **CRITICAL**: Focus on creating the documentation file immediately. Analyze the PR, write the documentation, create the file, and submit a PR. Do not spend time on extensive exploration.
             `,
               labels: ['documentation', 'auto-generated']
             });
@@ -51,24 +70,8 @@ jobs:
             console.log(`Created issue #${issue.data.number}`);
             return issue.data.number;
 
-      - name: Trigger Claude Code Action
-        uses: actions/github-script@v7
-        with:
-          script: |
-            // Trigger the Claude Code Action workflow manually
-            try {
-              await github.rest.actions.createWorkflowDispatch({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                workflow_id: 'claude-code-action.yml',
-                ref: 'main',
-                inputs: {
-                  issue_number: '${{ steps.create-issue.outputs.result }}'
-                }
-              });
-              console.log('Successfully triggered Claude Code Action workflow');
-            } catch (error) {
-              console.error('Failed to trigger Claude Code Action workflow:', error);
-              // The issue was created, so Claude can still be triggered manually
-              console.log('Issue created successfully - Claude can be triggered manually by commenting @claude');
-            }
+      - name: Log Issue Creation
+        run: |
+          echo "Documentation request issue created successfully"
+          echo "Claude will be automatically triggered by the @claude mention in the issue"
+          echo "Issue number: ${{ steps.create-issue.outputs.result }}"
