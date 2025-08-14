@@ -31,7 +31,7 @@ jobs:
             1. **FIRST**: Get PR #${{ github.event.pull_request.number }} diff and analyze the changes
             2. **SECOND**: Create file \`docs/prs/pr-${{ github.event.pull_request.number }}-[clean-title].md\` (clean title = lowercase, replace spaces/special chars with dashes)
             3. **THIRD**: Write comprehensive documentation using the template below
-            4. **FOURTH**: Create a new PR with the documentation file
+            4. **FOURTH**: Use the GitHub API to CREATE A NEW PULL REQUEST automatically (not just provide a link)
 
             **PR TO DOCUMENT:**
             - Title: ${{ github.event.pull_request.title }}
@@ -66,8 +66,9 @@ jobs:
             - The docs/prs/ directory ALREADY EXISTS - DO NOT use mkdir or any directory creation commands
             - Use ONLY the Write tool to create the .md file directly
             - DO NOT use bash commands like mkdir, touch, or other file system operations
-            - Focus on: Analyze PR → Write documentation file → git add -f → git commit → git push → create PR
+            - Focus on: Analyze PR → Write documentation file → git add -f → git commit → git push → **CREATE PR WITH GITHUB API**
             - The file will be in .gitignore, so use "git add -f" to force add it
+            - **MUST CREATE THE ACTUAL PR**: Use mcp_github_create_pull_request tool to create the PR automatically
             `,
               labels: ['documentation', 'auto-generated']
             });
