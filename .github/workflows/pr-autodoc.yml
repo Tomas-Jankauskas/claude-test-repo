@@ -62,7 +62,12 @@ jobs:
             [Follow-up work, potential improvements, known limitations]
             \`\`\`
 
-            **CRITICAL**: Focus on creating the documentation file immediately. Analyze the PR, write the documentation, create the file, and submit a PR. Do not spend time on extensive exploration.
+            **CRITICAL INSTRUCTIONS**:
+            - The docs/prs/ directory ALREADY EXISTS - DO NOT use mkdir or any directory creation commands
+            - Use ONLY the Write tool to create the .md file directly
+            - DO NOT use bash commands like mkdir, touch, or other file system operations
+            - Focus on: Analyze PR → Write documentation file → git add -f → git commit → git push → create PR
+            - The file will be in .gitignore, so use "git add -f" to force add it
             `,
               labels: ['documentation', 'auto-generated']
             });
