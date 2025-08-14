@@ -2,7 +2,7 @@ name: Auto-generate PR Documentation
 
 on:
   pull_request:
-    types: [opened]  # Temporarily changed from [closed] for testing
+    types: [closed]  # Trigger when PR is closed (merged)
 
 permissions:
   contents: write
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   create-documentation-request:
-    if: github.event.pull_request.state == 'open'  # Temporarily changed for testing
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     
     steps:
@@ -56,13 +56,19 @@ jobs:
         with:
           script: |
             // Trigger the Claude Code Action workflow manually
-            await github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'claude-code-action.yml',
-              ref: '${{ github.event.pull_request.base.ref }}',
-              inputs: {
-                issue_number: '${{ steps.create-issue.outputs.result }}'
-              }
-            });
-            console.log('Triggered Claude Code Action workflow');
+            try {
+              await github.rest.actions.createWorkflowDispatch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'claude-code-action.yml',
+                ref: 'main',
+                inputs: {
+                  issue_number: '${{ steps.create-issue.outputs.result }}'
+                }
+              });
+              console.log('Successfully triggered Claude Code Action workflow');
+            } catch (error) {
+              console.error('Failed to trigger Claude Code Action workflow:', error);
+              // The issue was created, so Claude can still be triggered manually
+              console.log('Issue created successfully - Claude can be triggered manually by commenting @claude');
+            }
