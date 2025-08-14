@@ -30,16 +30,5 @@ jobs:
         uses: textcortex/claude-code-pr-autodoc-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          min_lines_changed: 10  # Lower threshold for this test repo
+          min_lines_changed: 10
           min_files_changed: 1
-          documentation_directory: docs/prs
-          timeout_minutes: 10
-          commit_tags: "[skip ci]"
-          pr_title_tags: "[auto-docs]"
-          custom_instructions: |
-            Please generate comprehensive documentation that includes:
-            - Clear explanation of the purpose and context
-            - Detailed technical implementation notes
-            - Impact analysis and any breaking changes
-            - Testing approach and coverage
-            - Future considerations and follow-up tasks
