@@ -23,6 +23,9 @@ jobs:
       id-token: write  # Required for OIDC authentication
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
       - name: Generate PR Documentation
         uses: textcortex/claude-code-pr-autodoc-action@v1
         with:
