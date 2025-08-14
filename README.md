@@ -60,8 +60,20 @@ console.log(`Environment: ${config.environment}`);
 | `NODE_ENV` | `development` | Application environment |
 | `LOG_LEVEL` | `info` | Logging level |
 
+## New Features
+
+### Text Processing Utilities
+Added comprehensive text processing utilities in `src/utils/textProcessor.js` with the following functions:
+- `capitalizeWords()` - Capitalizes the first letter of each word
+- `cleanText()` - Removes extra whitespace and normalizes line endings  
+- `truncateText()` - Truncates text with optional ellipsis
+- `countWords()` - Counts words in a text string
+
+All functions include proper error handling and comprehensive test coverage.
+
 ## Recent Updates
 
+- ✅ **TextCortex Integration**: Replaced custom workflows with professional TextCortex Claude Code PR Autodoc Action
 - ✅ **Automated Documentation Workflow**: Fully functional with auto-PR creation
 - ✅ **Cost-Optimized Testing**: Using minimal changes for validation
 - ✅ **GitHub Actions Integration**: Seamless Claude Code Action integration
