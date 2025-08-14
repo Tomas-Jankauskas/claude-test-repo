@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   claude-pr:
-    # Run if @claude is mentioned - allow bot-created issues
+    # Run if @claude is mentioned or workflow_dispatch is triggered
     if: |
       (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
@@ -43,5 +43,7 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           model: "claude-3-7-sonnet-20250219"
+          # Use agent mode for workflow_dispatch (automation), tag mode for @claude mentions
+          mode: ${{ github.event_name == 'workflow_dispatch' && 'agent' || 'tag' }}
         env:
           DEBUG: "true"
