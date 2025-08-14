@@ -1,6 +1,6 @@
 {
   "name": "claude-code-action-test",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Test repository for Claude Code Action automated documentation updates",
   "main": "src/index.js",
   "type": "module",
@@ -16,7 +16,8 @@
     "github-actions",
     "documentation",
     "automation",
-    "ai"
+    "ai",
+    "workflow-testing"
   ],
   "author": "Test Developer",
   "license": "MIT",
