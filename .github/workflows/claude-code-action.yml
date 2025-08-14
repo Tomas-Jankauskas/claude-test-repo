@@ -40,3 +40,4 @@ jobs:
           mode: "tag"
         env:
           DEBUG: "true"
+          # Important: docs/prs/ directory exists - use Write tool, not mkdir
