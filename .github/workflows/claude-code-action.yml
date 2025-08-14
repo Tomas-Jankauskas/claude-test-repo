@@ -56,7 +56,7 @@ jobs:
             
             // Find the most recent claude branch for this issue
             const issueBranches = branches.data.filter(branch => 
-              branch.name.startsWith(`claude/issue-${{ github.event.issue.number }}-`)
+              branch.name.startsWith(`claude/issue-${context.payload.issue.number}-`)
             );
             
             if (issueBranches.length === 0) {
@@ -69,7 +69,7 @@ jobs:
             console.log(`Found claude branch: ${claudeBranch}`);
             
             // Extract PR number from issue title
-            const prMatch = github.event.issue.title.match(/PR #(\d+)/);
+            const prMatch = context.payload.issue.title.match(/PR #(\d+)/);
             if (!prMatch) {
               console.log('Could not extract PR number from issue title');
               return;
@@ -93,7 +93,7 @@ jobs:
             - Auto-generated after Claude completed the analysis
 
             ### 🔗 **Related Issues**
-            Resolves #${{ github.event.issue.number }}
+            Resolves #${context.payload.issue.number}
 
             **Generated with [Claude Code Action](https://github.com/anthropics/claude-code-action)**`
               });
@@ -104,7 +104,7 @@ jobs:
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: ${{ github.event.issue.number }},
+                issue_number: context.payload.issue.number,
                 body: `✅ **Documentation PR created automatically!**
 
             🔗 **PR #${pr.data.number}**: ${pr.data.html_url}
@@ -119,7 +119,7 @@ jobs:
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: ${{ github.event.issue.number }},
+                issue_number: context.payload.issue.number,
                 body: `❌ **Failed to auto-create PR**
 
             Claude completed the documentation successfully, but there was an error auto-creating the PR:
