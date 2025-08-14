@@ -1,5 +1,6 @@
 # Claude Code Action Test Repository
 
+<!-- Simple test change for documentation generation - 2025-08-14 -->
 This repository is designed to test and demonstrate the automated documentation updates feature of [Claude Code Action](https://github.com/anthropics/claude-code-action).
 
 ## What This Repo Tests
