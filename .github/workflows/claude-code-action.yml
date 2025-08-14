@@ -7,6 +7,12 @@ on:
     types: [created]
   issues:
     types: [opened, assigned]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to process'
+        required: true
+        type: number
 
 permissions:
   contents: write
@@ -16,11 +22,12 @@ permissions:
 
 jobs:
   claude-pr:
-    # Only run if @claude is mentioned and not triggered by bots
+    # Run if @claude is mentioned or workflow_dispatch is triggered
     if: |
       (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'issues' && contains(github.event.issue.body, '@claude'))
+      (github.event_name == 'issues' && contains(github.event.issue.body, '@claude')) ||
+      (github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     
     steps:
@@ -36,5 +43,9 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           model: "claude-3-7-sonnet-20250219"
+          # Use agent mode for workflow_dispatch (automation), tag mode for @claude mentions
+          mode: ${{ github.event_name == 'workflow_dispatch' && 'agent' || 'tag' }}
+          # For workflow_dispatch, specify the issue number to work on
+          issue_number: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.issue_number || '' }}
         env:
           DEBUG: "true"
